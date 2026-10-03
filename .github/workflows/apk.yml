@@ -1,0 +1,49 @@
+name: APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14.3
+
+      - name: Build release APK
+        run: |
+          set -o pipefail
+          gradle :app:assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+
+      - name: Publish release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="1.0.${{ github.run_number }}"
+          cp app/build/outputs/apk/release/app-release.apk "DogCare-${V}.apk"
+          gh release create "v${V}" "DogCare-${V}.apk" \
+            --title "DogCare ${V}" \
+            --notes "Build automático de ${GITHUB_SHA::7}. Instale por cima da versão anterior: os dados ficam."
+
+      - name: Publish build log on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tail -n 400 build.log > build-log.txt || echo "no log" > build-log.txt
+          gh release create "fail-${{ github.run_number }}" build-log.txt \
+            --prerelease --title "Falha no build ${{ github.run_number }}" --notes "Log do build."
