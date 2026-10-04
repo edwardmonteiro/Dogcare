@@ -111,7 +111,7 @@ function barChart(values, labels, { target = null, h = 150, color = 'var(--accen
 
 /* radar 0–5 */
 function radarChart(axes, series) {
-  const W = 320, H = 290, cx = W / 2, cy = H / 2 + 4, R = 102, n = axes.length;
+  const W = 340, H = 290, cx = W / 2, cy = H / 2 + 4, R = 96, n = axes.length;
   const P = (i, v) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * R * v / 5, cy + Math.sin(a) * R * v / 5]; };
   let s = `<svg class="chart" viewBox="0 0 ${W} ${H}">`;
   for (let k = 1; k <= 5; k++) {

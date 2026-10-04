@@ -68,6 +68,7 @@ button { border: 0; background: none; padding: 0; cursor: pointer; }
   background-size: cover; background-position: center; overflow: hidden;
 }
 .avatar.lg { width: 88px; height: 88px; font-size: 32px; }
+.avatar.lg svg.i { width: 46px; height: 46px; stroke-width: 1.5; }
 .top .name { font-size: 18px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top .sub { font-size: 13px; color: var(--muted); }
 .icon-btn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); flex: none; }
