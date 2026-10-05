@@ -1,0 +1,27 @@
+{
+  "_doc": "Proposta para assets/ontology.json do Órbita (v5): novo sujeito 'cao' e conceitos do cão. Ao aplicar, acrescentar também no ONTOLOGY do validar_miniapp.py e gerar dogcare.json v2 com concept em cada campo e products.",
+  "subjects": { "cao": { "label": "Cão", "synonyms": ["cachorro", "cachorra", "cadela", "dog", "pet"] } },
+  "extendSubjects": {
+    "nutricao.energia": ["cao"], "nutricao.massa_alimento": ["cao"], "nutricao.alimento": ["cao"],
+    "hidratacao.volume": ["cao"], "corpo.peso": ["cao"], "atividade.duracao": ["cao"], "atividade.tipo": ["cao"],
+    "medicacao.nome": ["cao"], "medicacao.dose": ["cao"], "saude.ocorrencia": ["cao"], "saude.atendimento": ["cao"],
+    "vacina.nome": ["cao"], "texto.nota": ["cao"]
+  },
+  "_hc": "Nunca espelhar no Health Connect eventos com sujeito 'cao' (o peso do cão não pode entrar como peso do usuário).",
+  "concepts": {
+    "corpo.escore_condicao": { "label": "escore de condição corporal", "unit": "pts", "subjects": ["cao"], "range": [1, 9], "synonyms": ["ecc", "escore corporal", "bcs"] },
+    "excrecao.tipo": { "label": "xixi ou cocô", "unit": "codigo", "subjects": ["cao"], "synonyms": ["xixi", "coco", "necessidades"] },
+    "excrecao.consistencia": { "label": "consistência das fezes", "unit": "codigo", "subjects": ["cao", "bebe"], "synonyms": ["fezes", "coco mole", "diarreia"] },
+    "saude.intensidade": { "label": "intensidade do sintoma", "unit": "codigo", "subjects": ["cao", "usuario", "bebe"], "synonyms": ["leve", "moderado", "forte"] },
+    "parasita.tratamento": { "label": "vermífugo ou antipulgas", "unit": "codigo", "subjects": ["cao"], "synonyms": ["vermifugo", "antipulgas", "carrapato"] },
+    "bemestar.area": { "label": "área de bem-estar", "unit": "codigo", "subjects": ["cao"], "synonyms": ["energia", "pelagem", "mobilidade"] },
+    "bemestar.nota": { "label": "nota de bem-estar (0–5)", "unit": "pts", "subjects": ["cao"], "range": [0, 5], "synonyms": ["bem estar"] }
+  },
+  "productsV2": [
+    { "id": "kcal_diario", "concept": "nutricao.energia", "subject": "cao", "unit": "kcal", "source": { "event": "meal", "field": "kcal", "agg": "sum" }, "llm": true },
+    { "id": "passeio_min", "concept": "atividade.duracao", "subject": "cao", "unit": "min", "source": { "event": "walk", "field": "min", "agg": "sum" }, "llm": true },
+    { "id": "agua_diaria", "concept": "hidratacao.volume", "subject": "cao", "unit": "ml", "source": { "event": "water", "field": "ml", "agg": "sum" }, "llm": true },
+    { "id": "peso", "concept": "corpo.peso", "subject": "cao", "unit": "kg", "source": { "event": "weight", "field": "kg", "agg": "last" }, "llm": true },
+    { "id": "sintomas", "concept": "saude.ocorrencia", "subject": "cao", "unit": "codigo", "source": { "event": "symptom", "field": "sym", "agg": "count" }, "llm": true }
+  ]
+}

@@ -1,0 +1,1219 @@
+{
+  "schema": "orbita.miniapp/v1",
+  "id": "dogcare",
+  "name": "DogCare",
+  "version": 1,
+  "order": 40,
+  "glyph": "🐾",
+  "accent": {
+    "light": "#C8643B",
+    "dark": "#E08158"
+  },
+  "description": "Cuidados do cachorro da família: ração e petiscos (kcal), água, passeios, peso e escore corporal, xixi e cocô, sintomas, vacinas, vermífugo, antipulgas, remédios e bem-estar mensal. Os dados são do cão, não do usuário nem da bebê.",
+  "subject": {
+    "id": "familia",
+    "label": "{{settings.dogName}}",
+    "words": [
+      "cachorro",
+      "cachorra",
+      "cao",
+      "cadela",
+      "dog",
+      "pet",
+      "{{settings.dogName}}"
+    ]
+  },
+  "notify": {
+    "suggest": "Só no resumo"
+  },
+  "settings": [
+    {
+      "key": "dogName",
+      "label": "Nome do cão",
+      "kind": "text",
+      "default": "Thor"
+    },
+    {
+      "key": "dogBirth",
+      "label": "Nascimento",
+      "kind": "date"
+    },
+    {
+      "key": "kcalTarget",
+      "label": "Meta diária (kcal) definida com o veterinário",
+      "kind": "number",
+      "unit": "kcal",
+      "min": 100,
+      "max": 5000,
+      "default": "800"
+    },
+    {
+      "key": "foodKcal100",
+      "label": "Ração principal: kcal por 100 g (embalagem ÷ 10)",
+      "kind": "number",
+      "unit": "kcal",
+      "min": 200,
+      "max": 600,
+      "default": "360"
+    },
+    {
+      "key": "treatKcal100",
+      "label": "Petisco: kcal por 100 g",
+      "kind": "number",
+      "unit": "kcal",
+      "min": 100,
+      "max": 600,
+      "default": "320"
+    },
+    {
+      "key": "idealKg",
+      "label": "Peso ideal (kg), se o veterinário indicou",
+      "kind": "number",
+      "unit": "kg",
+      "min": 0.5,
+      "max": 100
+    },
+    {
+      "key": "walkTarget",
+      "label": "Passeio por dia (min)",
+      "kind": "number",
+      "unit": "min",
+      "min": 10,
+      "max": 240,
+      "default": "45"
+    },
+    {
+      "key": "medOn",
+      "label": "Lembrar remédio diário",
+      "kind": "choice",
+      "options": [
+        "não",
+        "sim"
+      ],
+      "default": "não"
+    },
+    {
+      "key": "medName",
+      "label": "Remédio (como está na receita)",
+      "kind": "text"
+    },
+    {
+      "key": "medTime",
+      "label": "Horário do remédio",
+      "kind": "text",
+      "default": "08:00"
+    }
+  ],
+  "events": {
+    "meal": {
+      "label": "Refeição do cão",
+      "fields": [
+        {
+          "key": "food",
+          "label": "Alimento",
+          "kind": "choice",
+          "options": [
+            "ração",
+            "úmida",
+            "petisco",
+            "natural"
+          ],
+          "match": {
+            "ração": [
+              "racao",
+              "comida",
+              "tigela",
+              "pote"
+            ],
+            "úmida": [
+              "sache",
+              "umida",
+              "pate",
+              "lata"
+            ],
+            "petisco": [
+              "petisco",
+              "biscoito",
+              "bifinho",
+              "ossinho",
+              "snack"
+            ],
+            "natural": [
+              "frango",
+              "cenoura",
+              "carne",
+              "abobora",
+              "fruta"
+            ]
+          },
+          "default": "ração"
+        },
+        {
+          "key": "g",
+          "label": "Quantidade",
+          "kind": "number",
+          "unit": "g",
+          "min": 1,
+          "max": 2000
+        },
+        {
+          "key": "kcal",
+          "label": "Energia",
+          "kind": "number",
+          "unit": "kcal",
+          "hidden": true
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "derive": {
+        "kcal": "round(food == 'petisco' ? g * nz(settings.treatKcal100, 320) / 100 : food == 'úmida' ? g * 0.9 : food == 'natural' ? g * 1.5 : g * nz(settings.foodKcal100, 360) / 100)"
+      },
+      "validate": [
+        {
+          "expr": "g > 0",
+          "msg": "Informe a quantidade em gramas."
+        }
+      ],
+      "summary": "{{food}} · {{fmt(g)}} g · {{fmt(kcal)}} kcal"
+    },
+    "water": {
+      "label": "Água do cão",
+      "fields": [
+        {
+          "key": "ml",
+          "label": "Água",
+          "kind": "number",
+          "unit": "ml",
+          "min": 10,
+          "max": 5000
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "Água · {{fmt(ml)}} ml"
+    },
+    "walk": {
+      "label": "Passeio",
+      "fields": [
+        {
+          "key": "min",
+          "label": "Duração",
+          "kind": "number",
+          "unit": "min",
+          "min": 1,
+          "max": 480
+        },
+        {
+          "key": "intensity",
+          "label": "Intensidade",
+          "kind": "choice",
+          "options": [
+            "leve",
+            "moderada",
+            "intensa"
+          ],
+          "match": {
+            "intensa": [
+              "correu",
+              "corrida",
+              "trilha"
+            ],
+            "moderada": [
+              "brincou",
+              "bola",
+              "parque"
+            ]
+          },
+          "default": "leve"
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "Passeio · {{fmt(min)}} min · {{intensity}}"
+    },
+    "weight": {
+      "label": "Peso do cão",
+      "fields": [
+        {
+          "key": "kg",
+          "label": "Peso",
+          "kind": "number",
+          "unit": "kg",
+          "min": 0.5,
+          "max": 100
+        },
+        {
+          "key": "bcs",
+          "label": "Escore corporal (1–9)",
+          "kind": "scale",
+          "min": 1,
+          "max": 9
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "Peso · {{fmt(kg, 1)}} kg{{bcs ? ' · escore ' + bcs + '/9' : ''}}"
+    },
+    "potty": {
+      "label": "Xixi e cocô",
+      "fields": [
+        {
+          "key": "what",
+          "label": "O que fez",
+          "kind": "choice",
+          "options": [
+            "xixi",
+            "cocô",
+            "os dois"
+          ],
+          "match": {
+            "xixi": [
+              "xixi",
+              "urinou"
+            ],
+            "cocô": [
+              "coco",
+              "fezes",
+              "evacuou"
+            ],
+            "os dois": [
+              "necessidades",
+              "os dois"
+            ]
+          },
+          "default": "xixi"
+        },
+        {
+          "key": "stool",
+          "label": "Fezes",
+          "kind": "choice",
+          "options": [
+            "normal",
+            "mole",
+            "dura",
+            "diarreia"
+          ],
+          "match": {
+            "mole": [
+              "mole",
+              "pastosa"
+            ],
+            "dura": [
+              "dura",
+              "ressecada"
+            ],
+            "diarreia": [
+              "diarreia",
+              "liquida"
+            ]
+          },
+          "default": "normal"
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "{{what}}{{what != 'xixi' ? ' · fezes ' + stool : ''}}"
+    },
+    "symptom": {
+      "label": "Sintoma do cão",
+      "fields": [
+        {
+          "key": "sym",
+          "label": "Sintoma",
+          "kind": "choice",
+          "options": [
+            "vômito",
+            "diarreia",
+            "sem apetite",
+            "apatia",
+            "tosse",
+            "coceira",
+            "mancando",
+            "olhos",
+            "ouvido",
+            "outro"
+          ],
+          "match": {
+            "vômito": [
+              "vomit*"
+            ],
+            "diarreia": [
+              "diarreia",
+              "coco mole"
+            ],
+            "sem apetite": [
+              "nao comeu",
+              "sem apetite",
+              "recusou"
+            ],
+            "apatia": [
+              "apatico",
+              "abatido",
+              "prostrado",
+              "desanimado"
+            ],
+            "tosse": [
+              "tosse",
+              "tossi*"
+            ],
+            "coceira": [
+              "coceira",
+              "cocando"
+            ],
+            "mancando": [
+              "mancando",
+              "mancou"
+            ],
+            "olhos": [
+              "olho*"
+            ],
+            "ouvido": [
+              "ouvido",
+              "orelha"
+            ]
+          },
+          "default": "outro"
+        },
+        {
+          "key": "level",
+          "label": "Intensidade",
+          "kind": "choice",
+          "options": [
+            "leve",
+            "moderado",
+            "forte"
+          ],
+          "match": {
+            "forte": [
+              "muito",
+              "varias vezes",
+              "forte",
+              "sangue"
+            ],
+            "leve": [
+              "pouco",
+              "leve",
+              "uma vez"
+            ]
+          },
+          "default": "moderado"
+        },
+        {
+          "key": "note",
+          "label": "Detalhes",
+          "kind": "text",
+          "concept": "texto.nota"
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "{{sym}} · {{level}}{{note ? ' · ' + note : ''}}"
+    },
+    "care": {
+      "label": "Vacina, vermífugo ou antipulgas",
+      "fields": [
+        {
+          "key": "type",
+          "label": "Cuidado",
+          "kind": "choice",
+          "options": [
+            "vacina",
+            "vermífugo",
+            "antipulgas",
+            "consulta"
+          ],
+          "match": {
+            "vacina": [
+              "vacina",
+              "v8",
+              "v10",
+              "antirrabica",
+              "raiva",
+              "gripe",
+              "giardia",
+              "leishmaniose"
+            ],
+            "vermífugo": [
+              "vermifugo",
+              "verme"
+            ],
+            "antipulgas": [
+              "antipulga*",
+              "pulga",
+              "carrapato",
+              "bravecto",
+              "simparic",
+              "nexgard"
+            ],
+            "consulta": [
+              "veterinario",
+              "consulta",
+              "exame",
+              "vet"
+            ]
+          },
+          "default": "vacina"
+        },
+        {
+          "key": "name",
+          "label": "Nome / produto",
+          "kind": "text",
+          "concept": "texto.nota"
+        },
+        {
+          "key": "next",
+          "label": "Próxima dose",
+          "kind": "date"
+        },
+        {
+          "key": "at",
+          "label": "Data",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "{{type}}{{name ? ' · ' + name : ''}}{{next ? ' · próxima ' + date(next) : ''}}"
+    },
+    "med": {
+      "label": "Remédio dado ao cão",
+      "fields": [
+        {
+          "key": "name",
+          "label": "Remédio",
+          "kind": "text",
+          "default": "{{settings.medName}}",
+          "concept": "texto.nota"
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "Remédio · {{name}}"
+    },
+    "wellness": {
+      "label": "Bem-estar mensal",
+      "fields": [
+        {
+          "key": "area",
+          "label": "Área",
+          "kind": "choice",
+          "options": [
+            "energia",
+            "apetite",
+            "pelagem",
+            "mobilidade",
+            "digestão",
+            "sono",
+            "humor"
+          ]
+        },
+        {
+          "key": "score",
+          "label": "Nota (0–5)",
+          "kind": "scale",
+          "min": 0,
+          "max": 5
+        },
+        {
+          "key": "at",
+          "label": "Quando",
+          "kind": "when",
+          "isTime": true
+        }
+      ],
+      "summary": "Bem-estar · {{area}} {{score}}/5"
+    }
+  },
+  "intents": [
+    {
+      "id": "comida",
+      "mode": "log",
+      "event": "meal",
+      "any": [
+        "comeu",
+        "comer",
+        "jantou",
+        "almocou",
+        "dei",
+        "gramas",
+        "g"
+      ],
+      "strong": [
+        "racao",
+        "petisco",
+        "biscoito",
+        "bifinho",
+        "sache",
+        "ossinho"
+      ],
+      "none": [
+        "eu comi",
+        "comi",
+        "ela comeu",
+        "papinha",
+        "leite",
+        "mamou",
+        "pode comer",
+        "pode dar",
+        "posso dar",
+        "faz mal"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "g": "qty:g",
+        "food": "choice"
+      }
+    },
+    {
+      "id": "agua",
+      "mode": "log",
+      "event": "water",
+      "any": [
+        "agua",
+        "bebeu",
+        "pote de agua",
+        "ml"
+      ],
+      "none": [
+        "bebi",
+        "eu bebi",
+        "ela bebeu",
+        "mamadeira",
+        "leite"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "ml": "qty:ml"
+      }
+    },
+    {
+      "id": "passeio",
+      "mode": "log",
+      "event": "walk",
+      "any": [
+        "minutos",
+        "min",
+        "andou",
+        "brincou",
+        "correu"
+      ],
+      "strong": [
+        "passeou",
+        "passeio",
+        "passear",
+        "caminhada com"
+      ],
+      "none": [
+        "treinei",
+        "corri",
+        "eu corri",
+        "treino"
+      ],
+      "slots": {
+        "min": "qty:min",
+        "intensity": "choice"
+      }
+    },
+    {
+      "id": "peso",
+      "mode": "log",
+      "event": "weight",
+      "any": [
+        "pesou",
+        "peso",
+        "pesa",
+        "kg",
+        "quilos",
+        "balanca"
+      ],
+      "none": [
+        "eu peso",
+        "pesei",
+        "me pesei",
+        "ela pesou",
+        "ela pesa"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "kg": "qty:kg",
+        "bcs": "num:1-9"
+      }
+    },
+    {
+      "id": "banheiro",
+      "mode": "log",
+      "event": "potty",
+      "any": [
+        "xixi",
+        "coco",
+        "fezes",
+        "urinou",
+        "evacuou",
+        "necessidades"
+      ],
+      "none": [
+        "fralda",
+        "ela fez"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "what": "choice",
+        "stool": "choice"
+      }
+    },
+    {
+      "id": "sintoma",
+      "mode": "log",
+      "event": "symptom",
+      "any": [
+        "tossindo",
+        "tosse",
+        "coceira",
+        "cocando",
+        "olho",
+        "ouvido",
+        "orelha",
+        "nao comeu",
+        "recusou",
+        "abatido",
+        "apatico"
+      ],
+      "strong": [
+        "vomitou",
+        "vomitando",
+        "diarreia",
+        "mancando",
+        "mancou"
+      ],
+      "none": [
+        "eu vomitei",
+        "ela vomitou",
+        "golfou"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "sym": "choice",
+        "level": "choice",
+        "note": "text"
+      }
+    },
+    {
+      "id": "cuidado",
+      "mode": "log",
+      "event": "care",
+      "any": [
+        "vacina",
+        "tomou vacina",
+        "aplicou",
+        "veterinario",
+        "consulta"
+      ],
+      "strong": [
+        "vermifugo",
+        "antipulga*",
+        "antirrabica",
+        "v10",
+        "v8",
+        "bravecto",
+        "simparic",
+        "nexgard",
+        "leishmaniose"
+      ],
+      "none": [
+        "ela tomou vacina",
+        "pentavalente",
+        "pediatra"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "type": "choice",
+        "name": "text"
+      }
+    },
+    {
+      "id": "remedio",
+      "mode": "log",
+      "event": "med",
+      "any": [
+        "remedio",
+        "comprimido",
+        "deu o remedio",
+        "dei o remedio",
+        "{{settings.medName}}"
+      ],
+      "none": [
+        "tomei",
+        "eu tomei",
+        "ela tomou"
+      ],
+      "needsSubject": true,
+      "slots": {
+        "name": "text"
+      }
+    },
+    {
+      "id": "ver_saude",
+      "mode": "view",
+      "screen": "saude",
+      "any": [
+        "vacinas do",
+        "carteira",
+        "proxima vacina",
+        "quando vence",
+        "cuidados do"
+      ],
+      "needsSubject": true
+    },
+    {
+      "id": "ver_evolucao",
+      "mode": "view",
+      "screen": "evolucao",
+      "any": [
+        "evolucao",
+        "grafico de peso",
+        "como esta o peso",
+        "bem estar"
+      ],
+      "needsSubject": true
+    },
+    {
+      "id": "pode_comer",
+      "mode": "view",
+      "screen": "pode",
+      "any": [
+        "pode comer",
+        "pode dar",
+        "posso dar",
+        "faz mal",
+        "toxico",
+        "e venenoso"
+      ],
+      "needsSubject": true,
+      "strong": [
+        "pode comer",
+        "posso dar",
+        "pode dar",
+        "faz mal"
+      ]
+    }
+  ],
+  "examples": [
+    "o cachorro comeu 120 g de ração",
+    "dei 2 petiscos pro Thor",
+    "Thor passeou 40 minutos",
+    "o cachorro pesou 14,2 kg",
+    "o cachorro vomitou duas vezes",
+    "dei o vermífugo do cachorro",
+    "cachorro pode comer uva?"
+  ],
+  "screens": {
+    "home": {
+      "title": "{{settings.dogName}}",
+      "blocks": [
+        {
+          "type": "hero",
+          "text": "{{fmt(sum('meal', 'kcal', 'today'))}} de {{fmt(nz(settings.kcalTarget, 800))}} kcal",
+          "caption": "{{sum('meal', 'kcal', 'today') < nz(settings.kcalTarget, 800) ? 'Faltam cerca de ' + fmt((nz(settings.kcalTarget, 800) - sum('meal', 'kcal', 'today')) * 100 / nz(settings.foodKcal100, 360)) + ' g de ração' : 'Meta do dia atingida'}}{{settings.dogBirth ? ' · ' + ageText(settings.dogBirth) : ''}}"
+        },
+        {
+          "type": "metrics",
+          "items": [
+            {
+              "label": "Energia",
+              "value": "{{fmt(sum('meal', 'kcal', 'today'))}}",
+              "unit": "kcal",
+              "progress": "{{sum('meal', 'kcal', 'today') / nz(settings.kcalTarget, 800)}}"
+            },
+            {
+              "label": "Passeio",
+              "value": "{{fmt(sum('walk', 'min', 'today'))}}",
+              "unit": "min",
+              "progress": "{{sum('walk', 'min', 'today') / nz(settings.walkTarget, 45)}}"
+            },
+            {
+              "label": "Água",
+              "value": "{{fmt(sum('water', 'ml', 'today'))}}",
+              "unit": "ml"
+            },
+            {
+              "label": "Peso",
+              "value": "{{count('weight', 'all') ? fmt(last('weight').kg, 1) : '–'}}",
+              "unit": "kg",
+              "sub": "{{count('weight', 'all') ? ago(last('weight').at) : 'sem registro'}}"
+            }
+          ]
+        },
+        {
+          "type": "note",
+          "tone": "warn",
+          "if": "count('meal', '7d') >= 4 && avg(daily('meal', 'kcal', 7, 'sum')) > nz(settings.kcalTarget, 800) * 1.1",
+          "text": "Média da semana acima da meta: {{fmt(avg(daily('meal', 'kcal', 7, 'sum')))}} kcal por dia."
+        },
+        {
+          "type": "note",
+          "tone": "warn",
+          "if": "count('symptom', '7d') >= 2",
+          "text": "{{count('symptom', '7d')}} sintomas na semana. Se persistirem, fale com o veterinário."
+        },
+        {
+          "type": "logger",
+          "event": "meal",
+          "title": "Registrar refeição"
+        },
+        {
+          "type": "actions",
+          "items": [
+            {
+              "label": "Passeio",
+              "action": "screen",
+              "args": {
+                "to": "rotina"
+              }
+            },
+            {
+              "label": "Saúde",
+              "action": "screen",
+              "args": {
+                "to": "saude"
+              }
+            },
+            {
+              "label": "Evolução",
+              "action": "screen",
+              "args": {
+                "to": "evolucao"
+              }
+            },
+            {
+              "label": "Pode comer?",
+              "action": "screen",
+              "args": {
+                "to": "pode"
+              }
+            }
+          ]
+        },
+        {
+          "type": "timeline",
+          "title": "Hoje",
+          "events": [
+            "meal",
+            "water",
+            "walk",
+            "potty",
+            "weight",
+            "symptom",
+            "care",
+            "med"
+          ],
+          "range": "today",
+          "limit": 20
+        }
+      ]
+    },
+    "rotina": {
+      "title": "Rotina",
+      "blocks": [
+        {
+          "type": "logger",
+          "event": "walk",
+          "title": "Passeio"
+        },
+        {
+          "type": "logger",
+          "event": "water",
+          "title": "Água"
+        },
+        {
+          "type": "logger",
+          "event": "potty",
+          "title": "Xixi e cocô"
+        },
+        {
+          "type": "chart",
+          "kind": "bars",
+          "label": "Passeio por dia",
+          "values": "{{daily('walk', 'min', 7, 'sum')}}",
+          "labels": "{{days(7)}}",
+          "unit": "min",
+          "target": "{{nz(settings.walkTarget, 45)}}"
+        },
+        {
+          "type": "timeline",
+          "title": "Últimos 7 dias",
+          "events": [
+            "walk",
+            "water",
+            "potty"
+          ],
+          "range": "7d",
+          "limit": 30
+        }
+      ]
+    },
+    "saude": {
+      "title": "Saúde",
+      "blocks": [
+        {
+          "type": "note",
+          "tone": "bad",
+          "text": "Emergência: dificuldade para respirar, barriga inchada ou dura, tentar vomitar sem sair nada, convulsão, desmaio, gengiva pálida, não conseguir urinar ou suspeita de intoxicação. Vá ao veterinário ou à clínica 24 h agora."
+        },
+        {
+          "type": "section",
+          "text": "Vacinas e antiparasitários"
+        },
+        {
+          "type": "logger",
+          "event": "care",
+          "title": "Registrar cuidado"
+        },
+        {
+          "type": "timeline",
+          "title": "Histórico",
+          "events": [
+            "care"
+          ],
+          "range": "all",
+          "limit": 20
+        },
+        {
+          "type": "section",
+          "text": "Remédios"
+        },
+        {
+          "type": "note",
+          "tone": "info",
+          "if": "settings.medOn == 'sim'",
+          "text": "{{settings.medName}} às {{settings.medTime}}. Use a dose da receita."
+        },
+        {
+          "type": "logger",
+          "event": "med",
+          "title": "Dei o remédio"
+        },
+        {
+          "type": "section",
+          "text": "Sintomas"
+        },
+        {
+          "type": "logger",
+          "event": "symptom",
+          "title": "Registrar sintoma"
+        },
+        {
+          "type": "timeline",
+          "title": "Últimos 30 dias",
+          "events": [
+            "symptom",
+            "med"
+          ],
+          "range": "30d",
+          "limit": 30
+        }
+      ]
+    },
+    "evolucao": {
+      "title": "Evolução",
+      "blocks": [
+        {
+          "type": "chart",
+          "kind": "line",
+          "label": "Peso",
+          "values": "{{series('weight', 'kg', 'all')}}",
+          "labels": "{{seriesDates('weight', 'all')}}",
+          "unit": "kg",
+          "target": "{{settings.idealKg}}"
+        },
+        {
+          "type": "note",
+          "tone": "info",
+          "text": "Escore corporal ideal: 4 a 5 de 9. Costelas fáceis de sentir sem apertar e cintura visível de cima."
+        },
+        {
+          "type": "logger",
+          "event": "weight",
+          "title": "Pesar"
+        },
+        {
+          "type": "section",
+          "text": "Bem-estar do mês (0 a 5)"
+        },
+        {
+          "type": "radar",
+          "event": "wellness",
+          "areas": [
+            "energia",
+            "apetite",
+            "pelagem",
+            "mobilidade",
+            "digestão",
+            "sono",
+            "humor"
+          ],
+          "max": 5
+        },
+        {
+          "type": "logger",
+          "event": "wellness",
+          "title": "Avaliar uma área"
+        },
+        {
+          "type": "chart",
+          "kind": "bars",
+          "label": "Energia ingerida por dia",
+          "values": "{{daily('meal', 'kcal', 7, 'sum')}}",
+          "labels": "{{days(7)}}",
+          "unit": "kcal",
+          "target": "{{nz(settings.kcalTarget, 800)}}"
+        }
+      ]
+    },
+    "pode": {
+      "title": "Pode ou não pode?",
+      "blocks": [
+        {
+          "type": "note",
+          "tone": "bad",
+          "text": "Não pode: chocolate, uva e uva-passa, xilitol (doces diet, chicletes), cebola, alho, cebolinha, macadâmia, álcool, café, massa crua com fermento e remédios de gente (paracetamol, ibuprofeno)."
+        },
+        {
+          "type": "note",
+          "tone": "warn",
+          "text": "Evite: ossos cozidos, abacate, leite e laticínios, embutidos e frituras, alimentos crus, caroços e sementes."
+        },
+        {
+          "type": "note",
+          "tone": "good",
+          "text": "Pode, em pouca quantidade, cozido e sem tempero: cenoura, abóbora, maçã e pera sem sementes, banana, melancia sem caroço, mamão, frango, carne magra, peixe sem espinha, arroz, ovo cozido, batata-doce, vagem."
+        },
+        {
+          "type": "note",
+          "tone": "info",
+          "text": "Petiscos devem somar no máximo 10% das calorias do dia. Se ele comeu algo da lista vermelha, ligue para o veterinário agora, mesmo sem sintomas."
+        }
+      ]
+    }
+  },
+  "card": [
+    {
+      "type": "metrics",
+      "items": [
+        {
+          "label": "Energia",
+          "value": "{{fmt(sum('meal', 'kcal', 'today'))}}",
+          "unit": "kcal",
+          "progress": "{{sum('meal', 'kcal', 'today') / nz(settings.kcalTarget, 800)}}"
+        },
+        {
+          "label": "Passeio",
+          "value": "{{fmt(sum('walk', 'min', 'today'))}}",
+          "unit": "min"
+        },
+        {
+          "label": "Peso",
+          "value": "{{count('weight', 'all') ? fmt(last('weight').kg, 1) : '–'}}",
+          "unit": "kg"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "items": [
+        {
+          "label": "Ração",
+          "action": "prompt",
+          "args": {
+            "text": "o cachorro comeu 100 g de ração"
+          }
+        },
+        {
+          "label": "Passeio",
+          "action": "screen",
+          "args": {
+            "to": "rotina"
+          }
+        },
+        {
+          "label": "Saúde",
+          "action": "screen",
+          "args": {
+            "to": "saude"
+          }
+        }
+      ]
+    }
+  ],
+  "reactions": [
+    {
+      "id": "sintoma-forte",
+      "on": "dogcare.symptom",
+      "if": "ev.level == 'forte' || count('symptom', 'today') >= 2",
+      "do": "alert",
+      "priority": "urgent",
+      "text": "{{settings.dogName}}: sintoma forte ou repetido hoje ({{ev.sym}}). Ligue para o veterinário; em sinais de emergência, vá à clínica 24 h."
+    },
+    {
+      "id": "diarreia",
+      "on": "dogcare.potty",
+      "if": "ev.stool == 'diarreia'",
+      "do": "insight",
+      "priority": "normal",
+      "text": "Diarreia registrada. Ofereça água e observe. Se repetir, tiver sangue ou ele ficar abatido, procure o veterinário."
+    },
+    {
+      "id": "petiscos",
+      "on": "dogcare.meal",
+      "if": "ev.food == 'petisco'",
+      "do": "insight",
+      "priority": "normal",
+      "text": "Lembrete: petiscos devem ficar abaixo de 10% das calorias do dia ({{fmt(nz(settings.kcalTarget, 800) * 0.1)}} kcal)."
+    },
+    {
+      "id": "chuva-passeio",
+      "on": "dia.weather",
+      "if": "feeds.weather.ok && feeds.weather.prob >= 70",
+      "do": "insight",
+      "priority": "normal",
+      "text": "Chance alta de chuva hoje. Antecipe o passeio de {{settings.dogName}} ou troque por 10 minutos de farejar petiscos em casa."
+    }
+  ],
+  "reminders": [
+    {
+      "id": "remedio",
+      "if": "settings.medOn == 'sim'",
+      "time": "{{settings.medTime}}",
+      "text": "{{settings.medName}} de {{settings.dogName}}",
+      "prompt": "dei o remédio do cachorro"
+    }
+  ],
+  "digest": "{{count('meal', 'today') || count('walk', 'today') ? settings.dogName + ': ' + fmt(sum('meal', 'kcal', 'today')) + ' de ' + fmt(nz(settings.kcalTarget, 800)) + ' kcal, ' + fmt(sum('walk', 'min', 'today')) + ' min de passeio' + (count('symptom', 'today') ? ', ' + count('symptom', 'today') + ' sintoma(s)' : '') + '.' : ''}}"
+}
